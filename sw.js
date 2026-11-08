@@ -1,5 +1,5 @@
 // Dashboard Dorcat PWA. Naikkan SW_VERSI setiap ada perubahan file (Safari hanya memperbarui bila isi sw.js berubah).
-var SW_VERSI = 'dorcat-2026-11-08a';
+var SW_VERSI = 'dorcat-2026-11-08b';
 var FILE = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png', 'icon-180.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(SW_VERSI).then(function (c) {
