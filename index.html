@@ -35,6 +35,7 @@ iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(
 #garis{width:150px;height:3px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
 #garis i{display:block;width:40%;height:100%;background:var(--cy);animation:g 1.1s ease-in-out infinite alternate}
 @keyframes g{from{transform:translateX(-10%)}to{transform:translateX(160%)}}
+#versi{margin:0;color:var(--mut);font-size:12px}
 #ulang{display:none}
 #layar.masalah #ulang{display:inline-block}
 #layar.masalah #garis{display:none}
@@ -51,12 +52,13 @@ iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(
     <div id="garis"><i></i></div>
     <p id="pesan">Membuka dashboard…</p>
     <button id="ulang" class="utama">Coba lagi</button>
+    <p id="versi"></p>
   </div>
 </div>
 <script>
 (function () {
   var URL_APP = 'https://script.google.com/macros/s/AKfycbx1_Wi5lwQyel5jayBzGrUbqdA79UbdV63W726alqY7sGUVZ-ulpgP3PZqVRPad78hrkw/exec';
-  var BATAS_MS = 30000, TANPA_SINYAL = 'Tidak ada sinyal. Dashboard butuh internet untuk mengambil data terbaru.';
+  var APP_VERSI = '2026-11-08c', BATAS_MS = 30000, TANPA_SINYAL = 'Tidak ada sinyal. Dashboard butuh internet untuk mengambil data terbaru.';
   var $ = function (i) { return document.getElementById(i); };
   var app = $('app'), layar = $('layar'), pesan = $('pesan'), timer = null, dimuat = false;
 
@@ -75,6 +77,18 @@ iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(
   $('ulang').addEventListener('click', buka);
   window.addEventListener('online', function () { if (!dimuat) buka(); });
   window.addEventListener('offline', function () { if (!dimuat) masalah(TANPA_SINYAL); });
+
+  // Login cukup sekali: token dari dashboard disimpan di aplikasi ini
+  window.addEventListener('message', function (e) {
+    if (!/\.googleusercontent\.com$/.test(e.origin) || !e.data || !e.data.dorcat || !e.source) return;
+    var k = 'dorcatToken';
+    try {
+      if (e.data.dorcat === 'simpan' && e.data.token) localStorage.setItem(k, e.data.token);
+      else if (e.data.dorcat === 'hapus') localStorage.removeItem(k);
+      else if (e.data.dorcat === 'minta') e.source.postMessage({ dorcat: 'isi', token: localStorage.getItem(k) || '', versi: APP_VERSI }, e.origin);
+    } catch (err) { if (e.data.dorcat === 'minta') e.source.postMessage({ dorcat: 'isi', token: '', versi: APP_VERSI }, e.origin); }
+  });
+  $('versi').textContent = 'Versi aplikasi ' + APP_VERSI;
 
   // iPhone: setelah keyboard tertutup layar bisa tertinggal bergeser ke atas, jadi posisinya dikembalikan.
   // Saat keyboard terbuka posisi tidak diganggu agar kolom yang diketik tetap terlihat.
